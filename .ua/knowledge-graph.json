@@ -1,0 +1,810 @@
+{
+  "version": "1.0.0",
+  "kind": "knowledge",
+  "project": {
+    "name": "Integration Recipe Agent Knowledge Base",
+    "languages": [
+      "markdown"
+    ],
+    "frameworks": [
+      "karpathy-wiki"
+    ],
+    "description": "Knowledge graph for Integration Recipe Agent Knowledge Base",
+    "analyzedAt": "2026-09-22T04:28:37.650058+00:00",
+    "gitCommitHash": ""
+  },
+  "nodes": [
+    {
+      "id": "article:customer-pains",
+      "type": "article",
+      "name": "Customer pains",
+      "filePath": "customer-pains.md",
+      "summary": "The working hypothesis is that difficult developer-support tickets require repeated manual translation:",
+      "tags": [
+        "customer",
+        "customer and workflow",
+        "discovery",
+        "support"
+      ],
+      "complexity": "simple",
+      "knowledgeMeta": {
+        "wikilinks": [
+          "pilot-plan",
+          "product-thesis",
+          "integration-patterns"
+        ],
+        "category": "Customer and workflow",
+        "content": "---\nsummary: API support teams repeatedly translate generic documentation into examples that match a customer's framework, authentication, and intended operation.\ntags: customer, support, discovery\ncomplexity: 2\n---\n\n# Customer pains\n\nThe working hypothesis is that difficult developer-support tickets require repeated manual translation:\n\n1. Understand the customer's intended outcome rather than only the endpoint name.\n2. Locate the correct documentation and current API contract.\n3. Adapt authentication and request handling to the customer's framework.\n4. Produce an example the customer can run and modify.\n5. Remove customer data and credentials before sharing.\n\nThis is not yet customer evidence. The questions and thresholds in [[pilot-plan]] are designed to falsify it. If support teams mostly answer with existing documentation links or snippets, [[product-thesis]] should be rejected.\n\nRelated workflow patterns are catalogued in [[integration-patterns]].\n\n",
+        "backlinks": [
+          "article:market-landscape"
+        ]
+      }
+    },
+    {
+      "id": "article:integration-patterns",
+      "type": "article",
+      "name": "Integration patterns",
+      "filePath": "integration-patterns.md",
+      "summary": "The ticket review should classify requests into a small set of recurring patterns:",
+      "tags": [
+        "api",
+        "customer and workflow",
+        "patterns",
+        "recipes"
+      ],
+      "complexity": "simple",
+      "knowledgeMeta": {
+        "wikilinks": [
+          "pilot-plan",
+          "security-model"
+        ],
+        "category": "Customer and workflow",
+        "content": "---\nsummary: The pilot should sample common API workflows without expanding into a general integration platform.\ntags: api, recipes, patterns\ncomplexity: 3\n---\n\n# Integration patterns\n\nThe ticket review should classify requests into a small set of recurring patterns:\n\n- Authenticated REST read\n- Authenticated REST write\n- Pagination\n- Webhook receipt and signature handling\n- Documented error handling\n- Framework-specific server route\n\nThese categories guide ticket sampling; they are not six product modules. Each generated recipe implements only one requested operation and uses the partner's documented contract.\n\nPatterns seen repeatedly in the partner's tickets feed [[pilot-plan]]. Missing or contradictory source material is handled according to [[security-model]] rather than guessed.\n\n",
+        "backlinks": [
+          "article:customer-pains",
+          "article:pilot-plan"
+        ]
+      }
+    },
+    {
+      "id": "article:market-landscape",
+      "type": "article",
+      "name": "Market landscape",
+      "filePath": "market-landscape.md",
+      "summary": "The market already has strong products for adjacent jobs:",
+      "tags": [
+        "competitors",
+        "developer-tools",
+        "market",
+        "market and positioning"
+      ],
+      "complexity": "simple",
+      "knowledgeMeta": {
+        "wikilinks": [
+          "customer-pains",
+          "product-thesis",
+          "security-model"
+        ],
+        "category": "Market and positioning",
+        "content": "---\nsummary: Existing products cover documentation answers, SDK generation, and connector infrastructure, leaving room for customer-specific runnable examples.\ntags: market, competitors, developer-tools\ncomplexity: 2\n---\n\n# Market landscape\n\nThe market already has strong products for adjacent jobs:\n\n- Mintlify and Kapa provide documentation-grounded answers and generated snippets.\n- Stainless and Fern generate reusable SDKs from API specifications.\n- Pipedream supplies managed authentication and a broad connector registry.\n- Codex can execute repeatable repository tasks from GitHub Actions.\n\nThe proposed agent does not recreate those layers. Its proposed wedge is the customer-specific artifact between documentation and a production integration: a runnable example shaped around one support request.\n\nThis positioning connects [[customer-pains]] to the narrow [[product-thesis]]. Any implementation must preserve the boundaries in [[security-model]].\n\nSources: [Mintlify](https://mintlify.com/docs/guides/assistant), [Kapa](https://www.kapa.ai/solutions/product-agent-sdk), [Stainless](https://www.stainless.com/docs/compare/fern/), [Pipedream](https://pipedream.com/), [OpenAI Codex GitHub Action](https://developers.openai.com/docs/github-action).\n\n",
+        "backlinks": [
+          "article:product-thesis"
+        ]
+      }
+    },
+    {
+      "id": "article:pilot-plan",
+      "type": "article",
+      "name": "Pilot plan",
+      "filePath": "pilot-plan.md",
+      "summary": "- Public developer documentation and an OpenAPI document - A restricted sandbox credential and non-production API host - At least five substantive integration questions per month - One support revi...",
+      "tags": [
+        "metrics",
+        "pilot",
+        "pilot and operations",
+        "validation"
+      ],
+      "complexity": "simple",
+      "knowledgeMeta": {
+        "wikilinks": [
+          "product-thesis",
+          "integration-patterns",
+          "security-model"
+        ],
+        "category": "Pilot and operations",
+        "content": "---\nsummary: Recruit one API partner, study recent tickets, and test five concierge recipes before relying on automation.\ntags: pilot, metrics, validation\ncomplexity: 3\n---\n\n# Pilot plan\n\n## Partner criteria\n\n- Public developer documentation and an OpenAPI document\n- A restricted sandbox credential and non-production API host\n- At least five substantive integration questions per month\n- One support reviewer willing to measure editing time and customer suitability\n\n## Concierge sequence\n\n1. Review 15\u201320 recent tickets.\n2. Identify the three most repeated integration requests.\n3. Generate five historical recipes with Jelwin Codex.\n4. Have the support reviewer edit and run them.\n5. Record whether each recipe would have been sent to the original customer.\n\n## Gate\n\nContinue only when at least four of five recipes run successfully, median editing is under 15 minutes, and at least three would have been sent. Otherwise revise or stop [[product-thesis]].\n\nUse the scorecard at `research/pilot-scorecard.md`. The ticket patterns come from [[integration-patterns]] and all credential use follows [[security-model]].\n\n",
+        "backlinks": [
+          "article:customer-pains",
+          "article:integration-patterns",
+          "article:product-thesis"
+        ]
+      }
+    },
+    {
+      "id": "article:product-thesis",
+      "type": "article",
+      "name": "Product thesis",
+      "filePath": "product-thesis.md",
+      "summary": "For an API or SDK company, a support agent labels a structured GitHub issue and receives a draft pull request containing one runnable Next.js/TypeScript integration recipe.",
+      "tags": [
+        "automation",
+        "hypothesis",
+        "market and positioning",
+        "product"
+      ],
+      "complexity": "simple",
+      "knowledgeMeta": {
+        "wikilinks": [
+          "pilot-plan",
+          "market-landscape",
+          "security-model"
+        ],
+        "category": "Market and positioning",
+        "content": "---\nsummary: A trusted support agent can turn one structured issue into a reviewed runnable Next.js recipe faster than creating the example manually.\ntags: product, hypothesis, automation\ncomplexity: 3\n---\n\n# Product thesis\n\nFor an API or SDK company, a support agent labels a structured GitHub issue and receives a draft pull request containing one runnable Next.js/TypeScript integration recipe.\n\nThe recipe is an artifact, not a conversational answer. It contains setup instructions, an environment template, the requested operation, and a sandbox smoke command. It is reviewed before it runs with credentials.\n\nThe initial scope deliberately supports one partner, one framework, one OpenAPI source, and one sandbox host. Generalization happens only after [[pilot-plan]] establishes repeated demand.\n\nThe surrounding market is described in [[market-landscape]], while [[security-model]] defines the non-negotiable execution split.\n\n",
+        "backlinks": [
+          "article:customer-pains",
+          "article:market-landscape",
+          "article:pilot-plan",
+          "article:security-model"
+        ]
+      }
+    },
+    {
+      "id": "article:security-model",
+      "type": "article",
+      "name": "Security model",
+      "filePath": "security-model.md",
+      "summary": "Issue bodies, documentation pages, OpenAPI descriptions, and generated files are untrusted.",
+      "tags": [
+        "credentials",
+        "github-actions",
+        "pilot and operations",
+        "security"
+      ],
+      "complexity": "simple",
+      "knowledgeMeta": {
+        "wikilinks": [
+          "product-thesis"
+        ],
+        "category": "Pilot and operations",
+        "content": "---\nsummary: Generation, repository publishing, and live sandbox execution are separate trust zones with human approval before credentials appear.\ntags: security, github-actions, credentials\ncomplexity: 4\n---\n\n# Security model\n\nIssue bodies, documentation pages, OpenAPI descriptions, and generated files are untrusted.\n\nThe workflow separates three capabilities:\n\n1. **Generate:** Codex receives sanitized context but no GitHub write credential and no partner sandbox key.\n2. **Publish:** a clean job validates the artifact and uses the GitHub token to create or update the draft pull request.\n3. **Execute:** after code review, a protected GitHub environment injects a restricted sandbox key for the smoke test.\n\nThe validator restricts output to one issue-scoped recipe directory, an approved dependency set, bounded text files, and allowlisted hosts. The live key must be short-lived or easily revocable and incapable of production access.\n\nThis model supports [[product-thesis]] without granting the generator customer-repository or production access. It follows OpenAI's guidance to constrain Codex initiators, sandbox permissions, and secret exposure in GitHub Actions.\n\nSource: [OpenAI Codex GitHub Action](https://developers.openai.com/docs/github-action).\n\n",
+        "backlinks": [
+          "article:integration-patterns",
+          "article:market-landscape",
+          "article:pilot-plan",
+          "article:product-thesis"
+        ]
+      }
+    },
+    {
+      "id": "topic:market-and-positioning",
+      "type": "topic",
+      "name": "Market and positioning",
+      "summary": "Category from index: Market and positioning (2 articles)",
+      "tags": [
+        "category"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "topic:customer-and-workflow",
+      "type": "topic",
+      "name": "Customer and workflow",
+      "summary": "Category from index: Customer and workflow (2 articles)",
+      "tags": [
+        "category"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "topic:pilot-and-operations",
+      "type": "topic",
+      "name": "Pilot and operations",
+      "summary": "Category from index: Pilot and operations (2 articles)",
+      "tags": [
+        "category"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "source:google-api-experience",
+      "type": "source",
+      "name": "google-api-experience.md",
+      "filePath": "raw/google-api-experience.md",
+      "summary": "Raw source (.md, 0 KB)",
+      "tags": [
+        "raw",
+        "md"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "source:kapa",
+      "type": "source",
+      "name": "kapa.md",
+      "filePath": "raw/kapa.md",
+      "summary": "Raw source (.md, 0 KB)",
+      "tags": [
+        "raw",
+        "md"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "source:mintlify",
+      "type": "source",
+      "name": "mintlify.md",
+      "filePath": "raw/mintlify.md",
+      "summary": "Raw source (.md, 0 KB)",
+      "tags": [
+        "raw",
+        "md"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "source:openai-codex-action",
+      "type": "source",
+      "name": "openai-codex-action.md",
+      "filePath": "raw/openai-codex-action.md",
+      "summary": "Raw source (.md, 0 KB)",
+      "tags": [
+        "raw",
+        "md"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "source:pipedream",
+      "type": "source",
+      "name": "pipedream.md",
+      "filePath": "raw/pipedream.md",
+      "summary": "Raw source (.md, 0 KB)",
+      "tags": [
+        "raw",
+        "md"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "source:stainless",
+      "type": "source",
+      "name": "stainless.md",
+      "filePath": "raw/stainless.md",
+      "summary": "Raw source (.md, 0 KB)",
+      "tags": [
+        "raw",
+        "md"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "entity:api-support-agent",
+      "type": "entity",
+      "name": "API support agent",
+      "summary": "The human operator who supplies a structured support request, reviews the generated recipe, and decides whether it is suitable for a customer.",
+      "tags": [
+        "actor",
+        "support",
+        "review"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "entity:api-sdk-partner",
+      "type": "entity",
+      "name": "API or SDK partner",
+      "summary": "The initial partner company whose documentation, OpenAPI contract, ticket history, and restricted sandbox define the pilot boundary.",
+      "tags": [
+        "actor",
+        "partner",
+        "pilot"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "entity:jelwin-codex",
+      "type": "entity",
+      "name": "Jelwin Codex",
+      "summary": "The recipe generator used during the concierge pilot to turn historical support tickets into repository artifacts.",
+      "tags": [
+        "automation",
+        "generator",
+        "codex"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "entity:protected-sandbox-environment",
+      "type": "entity",
+      "name": "Protected sandbox environment",
+      "summary": "The non-production execution boundary that releases a restricted credential only after human review and approval.",
+      "tags": [
+        "security",
+        "sandbox",
+        "credentials"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "claim:customer-pains:translation-last-mile",
+      "type": "claim",
+      "name": "Support work is a translation last mile",
+      "summary": "The hypothesized burden is translating a generic API contract into a safe, framework-specific, runnable artifact for one customer's intended outcome.",
+      "tags": [
+        "hypothesis",
+        "support",
+        "customer-pain"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "claim:integration-patterns:one-operation-boundary",
+      "type": "claim",
+      "name": "One operation is the useful recipe boundary",
+      "summary": "Recurring integration categories should guide sampling, while each delivered recipe stays focused on one documented API operation rather than becoming a general integration module.",
+      "tags": [
+        "scope",
+        "recipes",
+        "yagni"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "claim:market-landscape:artifact-gap",
+      "type": "claim",
+      "name": "A customer-specific artifact gap may remain",
+      "summary": "Documentation assistants, SDK generators, and connector platforms cover adjacent layers but may leave room for a reviewed runnable example tailored to one support request.",
+      "tags": [
+        "market",
+        "hypothesis",
+        "positioning"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "claim:pilot-plan:concierge-before-automation",
+      "type": "claim",
+      "name": "Concierge evidence should precede automation",
+      "summary": "Five manually generated and reviewed historical recipes are the minimum evidence required before investing in an automated issue-to-PR workflow.",
+      "tags": [
+        "validation",
+        "pilot",
+        "yagni"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "claim:security-model:separated-capabilities",
+      "type": "claim",
+      "name": "Generation, publishing, and execution require separate capabilities",
+      "summary": "The untrusted generator must not hold repository-write or sandbox credentials; clean publishing and approved sandbox execution occur in separate trust zones.",
+      "tags": [
+        "security",
+        "trust-boundary",
+        "github-actions"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "claim:security-model:uncertain-contract-fails-closed",
+      "type": "claim",
+      "name": "Uncertain source material must fail closed",
+      "summary": "Missing or contradictory documentation must produce a request for clarification instead of invented endpoints, parameters, or authentication behavior.",
+      "tags": [
+        "security",
+        "validation",
+        "documentation"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "article:customer-pains",
+      "target": "article:pilot-plan",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:customer-pains",
+      "target": "article:product-thesis",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:customer-pains",
+      "target": "article:integration-patterns",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:integration-patterns",
+      "target": "article:pilot-plan",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:integration-patterns",
+      "target": "article:security-model",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:market-landscape",
+      "target": "article:customer-pains",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:market-landscape",
+      "target": "article:product-thesis",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:market-landscape",
+      "target": "article:security-model",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:pilot-plan",
+      "target": "article:product-thesis",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:pilot-plan",
+      "target": "article:integration-patterns",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:pilot-plan",
+      "target": "article:security-model",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:product-thesis",
+      "target": "article:pilot-plan",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:product-thesis",
+      "target": "article:market-landscape",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:product-thesis",
+      "target": "article:security-model",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:security-model",
+      "target": "article:product-thesis",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:market-landscape",
+      "target": "topic:market-and-positioning",
+      "type": "categorized_under",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "article:product-thesis",
+      "target": "topic:market-and-positioning",
+      "type": "categorized_under",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "article:customer-pains",
+      "target": "topic:customer-and-workflow",
+      "type": "categorized_under",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "article:integration-patterns",
+      "target": "topic:customer-and-workflow",
+      "type": "categorized_under",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "article:pilot-plan",
+      "target": "topic:pilot-and-operations",
+      "type": "categorized_under",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "article:security-model",
+      "target": "topic:pilot-and-operations",
+      "type": "categorized_under",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "article:customer-pains",
+      "target": "claim:customer-pains:translation-last-mile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "claim:customer-pains:translation-last-mile",
+      "target": "entity:api-support-agent",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "article:integration-patterns",
+      "target": "claim:integration-patterns:one-operation-boundary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "article:market-landscape",
+      "target": "claim:market-landscape:artifact-gap",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "claim:market-landscape:artifact-gap",
+      "target": "claim:customer-pains:translation-last-mile",
+      "type": "builds_on",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "article:product-thesis",
+      "target": "claim:market-landscape:artifact-gap",
+      "type": "builds_on",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "article:product-thesis",
+      "target": "claim:integration-patterns:one-operation-boundary",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "article:pilot-plan",
+      "target": "claim:pilot-plan:concierge-before-automation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "claim:pilot-plan:concierge-before-automation",
+      "target": "article:product-thesis",
+      "type": "validates",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "article:pilot-plan",
+      "target": "entity:api-sdk-partner",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "article:pilot-plan",
+      "target": "entity:jelwin-codex",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "entity:api-support-agent",
+      "target": "claim:pilot-plan:concierge-before-automation",
+      "type": "validates",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "article:security-model",
+      "target": "claim:security-model:separated-capabilities",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 0.95
+    },
+    {
+      "source": "article:security-model",
+      "target": "claim:security-model:uncertain-contract-fails-closed",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "claim:security-model:separated-capabilities",
+      "target": "entity:protected-sandbox-environment",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "entity:api-support-agent",
+      "target": "entity:protected-sandbox-environment",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "article:product-thesis",
+      "target": "entity:api-support-agent",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "article:product-thesis",
+      "target": "entity:api-sdk-partner",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "article:product-thesis",
+      "target": "entity:jelwin-codex",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "article:market-landscape",
+      "target": "source:mintlify",
+      "type": "cites",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "article:market-landscape",
+      "target": "source:kapa",
+      "type": "cites",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "article:market-landscape",
+      "target": "source:stainless",
+      "type": "cites",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "article:market-landscape",
+      "target": "source:pipedream",
+      "type": "cites",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "article:market-landscape",
+      "target": "source:openai-codex-action",
+      "type": "cites",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "article:security-model",
+      "target": "source:openai-codex-action",
+      "type": "cites",
+      "direction": "forward",
+      "weight": 0.9
+    }
+  ],
+  "layers": [
+    {
+      "id": "layer:market-and-positioning",
+      "name": "Market and positioning",
+      "description": "Market and positioning (5 nodes)",
+      "nodeIds": [
+        "article:market-landscape",
+        "article:product-thesis",
+        "topic:market-and-positioning",
+        "claim:market-landscape:artifact-gap",
+        "entity:api-support-agent"
+      ]
+    },
+    {
+      "id": "layer:customer-and-workflow",
+      "name": "Customer and workflow",
+      "description": "Customer and workflow (5 nodes)",
+      "nodeIds": [
+        "article:customer-pains",
+        "article:integration-patterns",
+        "topic:customer-and-workflow",
+        "claim:customer-pains:translation-last-mile",
+        "claim:integration-patterns:one-operation-boundary"
+      ]
+    },
+    {
+      "id": "layer:pilot-and-operations",
+      "name": "Pilot and operations",
+      "description": "Pilot and operations (8 nodes)",
+      "nodeIds": [
+        "article:pilot-plan",
+        "article:security-model",
+        "topic:pilot-and-operations",
+        "claim:pilot-plan:concierge-before-automation",
+        "entity:api-sdk-partner",
+        "entity:jelwin-codex",
+        "claim:security-model:separated-capabilities",
+        "claim:security-model:uncertain-contract-fails-closed"
+      ]
+    },
+    {
+      "id": "layer:other",
+      "name": "Other",
+      "description": "Uncategorized nodes (7)",
+      "nodeIds": [
+        "source:google-api-experience",
+        "source:kapa",
+        "source:mintlify",
+        "source:openai-codex-action",
+        "source:pipedream",
+        "source:stainless",
+        "entity:protected-sandbox-environment"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "order": 1,
+      "title": "Market and positioning",
+      "description": "Explore the Market and positioning section (2 articles)",
+      "nodeIds": [
+        "article:market-landscape",
+        "article:product-thesis"
+      ]
+    },
+    {
+      "order": 2,
+      "title": "Customer and workflow",
+      "description": "Explore the Customer and workflow section (2 articles)",
+      "nodeIds": [
+        "article:customer-pains",
+        "article:integration-patterns"
+      ]
+    },
+    {
+      "order": 3,
+      "title": "Pilot and operations",
+      "description": "Explore the Pilot and operations section (2 articles)",
+      "nodeIds": [
+        "article:pilot-plan",
+        "article:security-model"
+      ]
+    }
+  ]
+}

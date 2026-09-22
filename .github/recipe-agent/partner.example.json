@@ -1,0 +1,8 @@
+{
+  "name": "Partner API",
+  "docsUrl": "https://docs.example.invalid/getting-started",
+  "openApiUrl": "https://docs.example.invalid/openapi.json",
+  "sandboxBaseUrl": "https://sandbox-api.example.invalid",
+  "allowedDocsHosts": ["docs.example.invalid"],
+  "allowedApiHosts": ["sandbox-api.example.invalid"]
+}

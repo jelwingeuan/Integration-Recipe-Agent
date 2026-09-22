@@ -1,0 +1,51 @@
+name: Integration recipe
+description: Request a customer-ready Next.js integration example
+title: "[Recipe] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include credentials, customer data, private logs, or production URLs. A trusted collaborator must apply `generate-recipe` after reviewing this request.
+  - type: textarea
+    id: customer-goal
+    attributes:
+      label: Customer goal
+      description: Describe the outcome the customer is trying to achieve.
+    validations:
+      required: true
+  - type: textarea
+    id: documentation-urls
+    attributes:
+      label: Documentation URLs
+      description: Up to five relevant HTTPS pages on the configured documentation hosts.
+    validations:
+      required: true
+  - type: input
+    id: desired-operation
+    attributes:
+      label: Desired API operation
+      description: Name the endpoint or workflow; do not invent an operation.
+    validations:
+      required: true
+  - type: input
+    id: authentication
+    attributes:
+      label: Authentication method
+      description: State the documented sandbox authentication method without supplying a credential.
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Known constraints
+      description: Framework versions, routing style, hosting assumptions, or customer limitations.
+    validations:
+      required: true
+  - type: textarea
+    id: sample-input
+    attributes:
+      label: Safe sample input
+      description: Synthetic, non-sensitive input the recipe may use.
+    validations:
+      required: true

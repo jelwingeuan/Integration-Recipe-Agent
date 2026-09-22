@@ -1,0 +1,13 @@
+{
+  "name": "jelwin-integration-recipe-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check scripts/*.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
