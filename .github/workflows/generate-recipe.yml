@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      issues: read
     outputs:
       ready: ${{ steps.prepare.outputs.ready }}
       issue_number: ${{ steps.prepare.outputs.issue_number }}
@@ -80,17 +79,17 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-  publish:
+  validate-artifact:
     needs: [prepare, generate]
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      issues: write
-      pull-requests: write
+      contents: read
+    outputs:
+      recipe_dir: ${{ steps.accept.outputs.recipe_dir }}
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 0
+          persist-credentials: false
       - uses: actions/download-artifact@v5
         with:
           name: generated-recipe-${{ github.event.issue.number }}
@@ -99,21 +98,109 @@ jobs:
       # PR branches are never allowed to supply the validator itself.
       - id: accept
         run: node scripts/accept-artifact.mjs incoming "${{ needs.prepare.outputs.issue_number }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: accepted-recipe-${{ github.event.issue.number }}
+          path: ${{ steps.accept.outputs.recipe_dir }}
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    needs: [prepare, validate-artifact]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: accepted-recipe-${{ github.event.issue.number }}
+          path: ${{ needs.validate-artifact.outputs.recipe_dir }}
+      - name: Commit accepted recipe without checking out the repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ needs.prepare.outputs.issue_number }}
+          RECIPE_DIR: ${{ needs.validate-artifact.outputs.recipe_dir }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile, readdir } from "node:fs/promises";
+          import path from "node:path";
+
+          const { GITHUB_REPOSITORY: repo, GITHUB_SHA: baseSha, GH_TOKEN: token, ISSUE_NUMBER: rawIssue, RECIPE_DIR: recipeDir } = process.env;
+          const issue = Number(rawIssue);
+          if (!Number.isSafeInteger(issue) || issue < 1 || !new RegExp(`^recipes/${issue}-[a-z0-9][a-z0-9-]*$`).test(recipeDir)) {
+            throw new Error("Invalid accepted recipe path.");
+          }
+
+          async function api(method, route, body, allowMissing = false) {
+            const response = await fetch(`https://api.github.com/repos/${repo}/git/${route}`, {
+              method,
+              headers: {
+                Accept: "application/vnd.github+json",
+                Authorization: `Bearer ${token}`,
+                "X-GitHub-Api-Version": "2022-11-28",
+                ...(body ? { "Content-Type": "application/json" } : {}),
+              },
+              body: body ? JSON.stringify(body) : undefined,
+              signal: AbortSignal.timeout(30_000),
+            });
+            if (allowMissing && response.status === 404) return null;
+            if (!response.ok) throw new Error(`${method} ${route} failed: HTTP ${response.status}`);
+            return response.json();
+          }
+
+          async function filesIn(directory) {
+            const files = [];
+            for (const entry of await readdir(directory, { withFileTypes: true })) {
+              const name = path.posix.join(directory, entry.name);
+              if (entry.isDirectory()) files.push(...await filesIn(name));
+              else if (entry.isFile()) files.push(name);
+              else throw new Error(`Unsupported accepted recipe entry: ${name}`);
+            }
+            return files;
+          }
+
+          const commit = await api("GET", `commits/${baseSha}`);
+          const baseTree = await api("GET", `trees/${commit.tree.sha}?recursive=1`);
+          if (baseTree.truncated) throw new Error("Base tree is truncated; cannot safely replace the recipe.");
+          const files = await filesIn(recipeDir);
+          if (!files.length) throw new Error("Accepted recipe artifact is empty.");
+          const newPaths = new Set(files);
+          const tree = baseTree.tree
+            .filter((entry) => entry.path.startsWith(`recipes/${issue}-`) && entry.type !== "tree" && !newPaths.has(entry.path))
+            .map(({ path, mode, type }) => ({ path, mode, type, sha: null }));
+          for (const file of files) {
+            const content = (await readFile(file)).toString("base64");
+            const blob = await api("POST", "blobs", { content, encoding: "base64" });
+            tree.push({ path: file, mode: "100644", type: "blob", sha: blob.sha });
+          }
+          const nextTree = await api("POST", "trees", { base_tree: commit.tree.sha, tree });
+          const author = { name: "github-actions[bot]", email: "41898282+github-actions[bot]@users.noreply.github.com" };
+          const nextCommit = await api("POST", "commits", {
+            message: `Generate recipe for issue #${issue}`,
+            tree: nextTree.sha,
+            parents: [baseSha],
+            author,
+            committer: author,
+          });
+          const ref = `heads/recipe/issue-${issue}`;
+          if (await api("GET", `ref/${ref}`, undefined, true)) {
+            await api("PATCH", `refs/${ref}`, { sha: nextCommit.sha, force: true });
+          } else {
+            await api("POST", "refs", { ref: `refs/${ref}`, sha: nextCommit.sha });
+          }
+          NODE
       - name: Create or update draft pull request
         env:
           GH_TOKEN: ${{ github.token }}
           ISSUE_NUMBER: ${{ needs.prepare.outputs.issue_number }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
-          RECIPE_DIR: ${{ steps.accept.outputs.recipe_dir }}
+          RECIPE_DIR: ${{ needs.validate-artifact.outputs.recipe_dir }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           branch="recipe/issue-${ISSUE_NUMBER}"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A recipes
-          git commit --allow-empty -m "Generate recipe for issue #${ISSUE_NUMBER}"
-          git push --force origin "HEAD:refs/heads/${branch}"
-
           gh label create generated --repo "$GITHUB_REPOSITORY" --color 1D76DB --force
           gh label create awaiting-sandbox --repo "$GITHUB_REPOSITORY" --color FBCA04 --force
           gh label create recipe-reviewed --repo "$GITHUB_REPOSITORY" --color 5319E7 --force
