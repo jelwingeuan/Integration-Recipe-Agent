@@ -14,9 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      issues: write
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
       - id: recipe
         run: node scripts/find-recipe.mjs
       - name: Install without lifecycle scripts
@@ -25,12 +26,19 @@ jobs:
       - name: Build
         working-directory: ${{ steps.recipe.outputs.recipe_dir }}
         run: npm run build
+
+  record-build-status:
+    needs: build
+    if: always() && startsWith(github.head_ref, 'recipe/issue-') && contains(github.event.pull_request.labels.*.name, 'recipe-reviewed')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
       - name: Record build status
-        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          BUILD_RESULT: ${{ job.status }}
+          BUILD_RESULT: ${{ needs.build.result }}
         run: |
           if [ "$BUILD_RESULT" = "success" ]; then
             gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label awaiting-sandbox
@@ -42,14 +50,15 @@ jobs:
 
   live-sandbox:
     needs: build
-    if: contains(github.event.pull_request.labels.*.name, 'sandbox-approved')
+    if: needs.build.result == 'success' && contains(github.event.pull_request.labels.*.name, 'sandbox-approved')
     runs-on: ubuntu-latest
     environment: recipe-sandbox
     permissions:
       contents: read
-      issues: write
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
       - id: recipe
         run: node scripts/find-recipe.mjs
       - name: Install without lifecycle scripts
@@ -61,12 +70,19 @@ jobs:
           PARTNER_API_BASE_URL: ${{ vars.PARTNER_API_BASE_URL }}
           PARTNER_SANDBOX_API_KEY: ${{ secrets.PARTNER_SANDBOX_API_KEY }}
         run: npm run smoke
+
+  record-live-status:
+    needs: [build, live-sandbox]
+    if: always() && needs.build.result == 'success' && startsWith(github.head_ref, 'recipe/issue-') && contains(github.event.pull_request.labels.*.name, 'recipe-reviewed') && contains(github.event.pull_request.labels.*.name, 'sandbox-approved')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
       - name: Record live status
-        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          LIVE_RESULT: ${{ job.status }}
+          LIVE_RESULT: ${{ needs.live-sandbox.result }}
         run: |
           if [ "$LIVE_RESULT" = "success" ]; then
             gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label ready
